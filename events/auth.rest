@@ -1,0 +1,18 @@
+GET http://localhost:3000/posts/all
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiSm9lIiwiaWF0IjoxNzIzNjUxMTg5LCJleHAiOjE3MjM2NTEyMDR9.2jhvAUjwl6oSvdGdN6ZUKxzY2oO3lp1YWkSSxl7RxMg
+###
+
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+
+{
+    "username": "Joe"
+}
+
+###
+POST http://localhost:3000/auth/refreshToken
+Content-Type: application/json
+
+{
+    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiSm9lIiwiaWF0IjoxNzIzNjUxMDYyfQ.l0HyoQUsvpeXSJMlQBETBzx9kRVJOB5KrL-dEIGogPw"
+}

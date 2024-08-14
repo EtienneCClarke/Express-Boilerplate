@@ -1,0 +1,6 @@
+# NPM Packages
+/node_modules
+
+# Sensitive environment variables
+.env
+.env.local
