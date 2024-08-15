@@ -19,7 +19,7 @@ router.post('/login', async (req, res) => {
     const accessToken = jwt.signAccessToken(user);
     const refreshToken = jwt.signRefreshToken(user);
     
-    if(!db.updateUserRefreshToken(user.id, refreshToken)) return res.sendStatus(500);
+    if(!await db.updateUserRefreshToken(user.id, refreshToken)) return res.sendStatus(500);
 
     res.json({ accessToken, refreshToken });
 })
