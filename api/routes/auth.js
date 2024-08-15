@@ -1,45 +1,55 @@
-// user.js - User route module.
-
 const express = require("express");
 const router = express.Router();
+
 const jwt = require('../services/jwt');
+const db = require('../services/db');
+const crypt = require('../services/bcrypt');
 
-let refreshTokens = [];
+router.post('/login', async (req, res) => {
 
-router.post('/login', (req, res) => {
+    const { email, password } = req.body;
 
-    // TODO: Authenticate user
-    const username = req.body.username;
-    const user = { name: username };
+    const user = await db.getUserByEmail(email)
+
+    if(user === null) return res.sendStatus(404);
+    if(!await crypt.compare(password, user.password)) return res.sendStatus(500); // Authenticate User
+    if(!delete user.password) return res.sendStatus(500); // Remove hashed password from user object
 
     // Generate tokens
     const accessToken = jwt.signAccessToken(user);
-    const refreshToken = jwt.signRefreshToken(user)
+    const refreshToken = jwt.signRefreshToken(user);
     
-    // TODO: Store refresh token in database
-    refreshTokens.push(refreshToken);
+    if(!db.updateUserRefreshToken(user.id, refreshToken)) return res.sendStatus(500);
 
     res.json({ accessToken, refreshToken });
 })
 
-router.post('/refreshToken', (req, res) => {
+router.post('/refreshToken', async (req, res) => {
 
-    const token = req.body.token;
+    const { id, token } = req.body;
 
-    if(token === null) return res.sendStatus(401);
-
-    // TODO: Check if refresh token exists
-    if(token.includes(token)) return res.sendStatus(403);
+    if(id == null || token === null) return res.sendStatus(401);
+    if(!await db.checkIfRefreshTokenExists(id, token)) return res.sendStatus(403);
 
     try {
         const user = jwt.verifyRefreshToken(token);
-        const accessToken = jwt.signAccessToken({ user: user.name });
+        const accessToken = jwt.signAccessToken({ id: user.id });
         res.json({ accessToken });
     } catch (e) {
         return res.sendStatus(403)
     }
 })
 
-router.post('')
+router.delete('/logout', async (req, res) => {
+
+    const { id } = req.body;
+
+    if(!await db.checkIfUserExists(id)) return res.sendStatus(404)
+
+    if(await db.updateUserRefreshToken(id, null)) return res.sendStatus(200);
+
+    res.sendStatus(500);
+
+})
 
 module.exports = router;

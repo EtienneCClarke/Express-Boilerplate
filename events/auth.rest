@@ -1,18 +1,32 @@
+###
+
 GET http://localhost:3000/posts/all
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiSm9lIiwiaWF0IjoxNzIzNjUxMTg5LCJleHAiOjE3MjM2NTEyMDR9.2jhvAUjwl6oSvdGdN6ZUKxzY2oO3lp1YWkSSxl7RxMg
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjQ2ZjliYWYzLTY1NTItNGEzNy05MWEyLWFlYzNiNTNlNWE1ZSIsImlhdCI6MTcyMzY4MTA0NywiZXhwIjoxNzIzNjgxMDc3fQ.apXAJaNNGRM6i-Ua7CpU3oo1SccXOfMshM_XnQxi9OI
 ###
 
 POST http://localhost:3000/auth/login
 Content-Type: application/json
 
 {
-    "username": "Joe"
+    "email": "test@email.com",
+    "password": "password1"
 }
 
 ###
+
 POST http://localhost:3000/auth/refreshToken
 Content-Type: application/json
 
 {
-    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiSm9lIiwiaWF0IjoxNzIzNjUxMDYyfQ.l0HyoQUsvpeXSJMlQBETBzx9kRVJOB5KrL-dEIGogPw"
+    "id": "46f9baf3-6552-4a37-91a2-aec3b53e5a5e",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjQ2ZjliYWYzLTY1NTItNGEzNy05MWEyLWFlYzNiNTNlNWE1ZSIsImlhdCI6MTcyMzY4MTA0N30.05ukOMgsLpR_7LQiJJwbgpmYQMkcZm-7s208SALyxJg"
+}
+
+###
+
+DELETE http://localhost:3000/auth/logout
+Content-Type: application/json
+
+{
+    "id": "46f9baf3-6552-4a37-91a2-aec3b53e5a5e"
 }
