@@ -16,7 +16,7 @@ app.use('/stripe', payments)
 
 /* Start server */
 
-if(CONFIG.deployEnvironment === 'aws-lambda') {
+if(CONFIG.deployEnvironment === 'serverless') {
     module.exports.handler = serverless(app);
 } else {
     app.listen(CONFIG.port || 3000, () => console.log(`EXPRESS: Server listening on port ${CONFIG.port || 3000}.`));
