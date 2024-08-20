@@ -1,3 +1,5 @@
+require('dotenv').config()
+
 const CONFIG = {
     
     url: process.env.POSTGRES_URL,

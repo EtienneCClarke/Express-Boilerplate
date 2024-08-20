@@ -12,7 +12,7 @@ Content-Type: application/json
 
 POST http://localhost:3000/stripe/checkout-session
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjQxNTZjY2M5LTdjZWEtNDJhMi1hM2YyLWI0MWFjZTFkYWVmMiIsImlhdCI6MTcyNDExNTEzOSwiZXhwIjoxNzI0MTE2MDM5fQ.PuFcWQ8dVrYdptjCTKTz9rqlWd-1Mu8lsGzGCMJYbrs
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjQxNTZjY2M5LTdjZWEtNDJhMi1hM2YyLWI0MWFjZTFkYWVmMiIsImlhdCI6MTcyNDE1NjAxNiwiZXhwIjoxNzI0MTU2OTE2fQ.D_RrJV6C4gWrBA-sSWHUVj4cRS1fftoVYeotYlDYYjc
 
 {
     "items": [
@@ -37,9 +37,9 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjQxNTZjY2M5L
 {
     "card": {
         "name": "etienne cellier-clarke",
-        "number": 4242424242424242,
-        "exp_month": 12,
-        "exp_year": 2030,
-        "cvc": 424
+        "number": "4242424242424242",
+        "exp_month": "12",
+        "exp_year": "2030",
+        "cvc": "424"
     }
 }
