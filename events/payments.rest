@@ -1,0 +1,45 @@
+### Login
+
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+
+{
+    "email": "ecellierclarke@gmail.com",
+    "password": "Password_1!"
+}
+
+### Checkout
+
+POST http://localhost:3000/stripe/checkout-session
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjQxNTZjY2M5LTdjZWEtNDJhMi1hM2YyLWI0MWFjZTFkYWVmMiIsImlhdCI6MTcyNDExNTEzOSwiZXhwIjoxNzI0MTE2MDM5fQ.PuFcWQ8dVrYdptjCTKTz9rqlWd-1Mu8lsGzGCMJYbrs
+
+{
+    "items": [
+        {
+            "id": "price_1Po1XIRrskugOgPqWLUlPaSy",
+            "quantity": 1
+        }
+    ]
+}
+
+### Create customer
+
+POST http://localhost:3000/stripe/create-customer
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjQxNTZjY2M5LTdjZWEtNDJhMi1hM2YyLWI0MWFjZTFkYWVmMiIsImlhdCI6MTcyNDExNTEzOSwiZXhwIjoxNzI0MTE2MDM5fQ.PuFcWQ8dVrYdptjCTKTz9rqlWd-1Mu8lsGzGCMJYbrs
+
+### Add new card
+
+POST http://localhost:3000/stripe/add-card
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjQxNTZjY2M5LTdjZWEtNDJhMi1hM2YyLWI0MWFjZTFkYWVmMiIsImlhdCI6MTcyNDExNTEzOSwiZXhwIjoxNzI0MTE2MDM5fQ.PuFcWQ8dVrYdptjCTKTz9rqlWd-1Mu8lsGzGCMJYbrs
+
+{
+    "card": {
+        "name": "etienne cellier-clarke",
+        "number": 4242424242424242,
+        "exp_month": 12,
+        "exp_year": 2030,
+        "cvc": 424
+    }
+}

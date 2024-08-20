@@ -1,4 +1,4 @@
-module.exports = {
+const CONFIG = {
     
     url: process.env.POSTGRES_URL,
     prismaUrl: process.env.POSTGRES_PRISMA_URL,
@@ -10,3 +10,5 @@ module.exports = {
     database: process.env.POSTGRES_DATABASE
 
 }
+
+export { CONFIG }

@@ -1,32 +1,55 @@
-###
+### Create User
+
+PUT http://localhost:3000/auth/register
+Content-Type: application/json
+
+{
+    "email": "ecellierclarke@gmail.com",
+    "firstname": "etienne",
+    "lastname": "clarke",
+    "password": "Password_1!"
+}
+
+
+### Get Posts
 
 GET http://localhost:3000/posts/all
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjQ2ZjliYWYzLTY1NTItNGEzNy05MWEyLWFlYzNiNTNlNWE1ZSIsImlhdCI6MTcyMzY4MTA0NywiZXhwIjoxNzIzNjgxMDc3fQ.apXAJaNNGRM6i-Ua7CpU3oo1SccXOfMshM_XnQxi9OI
-###
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjQxNTZjY2M5LTdjZWEtNDJhMi1hM2YyLWI0MWFjZTFkYWVmMiIsImlhdCI6MTcyMzkxNjE0MSwiZXhwIjoxNzIzOTE3MDQxfQ.WDuCzUjBf3jGtOEeZT-xElTiZtwlwIkNl_w2Fd5OvRM
+
+### Login
 
 POST http://localhost:3000/auth/login
 Content-Type: application/json
 
 {
-    "email": "test@email.com",
-    "password": "password1"
+    "email": "ecellierclarke@gmail.com",
+    "password": "Password_1!"
 }
 
-###
+### Generate New Access Token
 
-POST http://localhost:3000/auth/refreshToken
+POST http://localhost:3000/auth/refresh-token
 Content-Type: application/json
 
 {
-    "id": "46f9baf3-6552-4a37-91a2-aec3b53e5a5e",
-    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjQ2ZjliYWYzLTY1NTItNGEzNy05MWEyLWFlYzNiNTNlNWE1ZSIsImlhdCI6MTcyMzY4MTA0N30.05ukOMgsLpR_7LQiJJwbgpmYQMkcZm-7s208SALyxJg"
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjQxNTZjY2M5LTdjZWEtNDJhMi1hM2YyLWI0MWFjZTFkYWVmMiIsImlhdCI6MTcyMzkxNjE0MX0.7Nx4PrroB2jDQCXPaG8rGjxM6vBuaHeIBwCLXgE_k18"
 }
 
-###
+### Logout
 
 DELETE http://localhost:3000/auth/logout
 Content-Type: application/json
 
 {
-    "id": "46f9baf3-6552-4a37-91a2-aec3b53e5a5e"
+    "id": "76542290-dee5-487b-acd6-42f9c027fa69"
+}
+
+### Delete Account
+
+DELETE http://localhost:3000/auth/delete-account
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjQxNTZjY2M5LTdjZWEtNDJhMi1hM2YyLWI0MWFjZTFkYWVmMiIsImlhdCI6MTcyMzkxNjE0MSwiZXhwIjoxNzIzOTE3MDQxfQ.WDuCzUjBf3jGtOEeZT-xElTiZtwlwIkNl_w2Fd5OvRM
+
+{
+    "password": "Password_1!"
 }
