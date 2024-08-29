@@ -1,5 +1,10 @@
-import { sql } from "@vercel/postgres";
+import { sql as vercelSql } from "@vercel/postgres";
+import { drizzle } from "drizzle-orm/vercel-postgres";
+import { InsertUser, users } from "../schemas/db.schema";
 import { User } from "../models/User";
+import { eq, sql } from "drizzle-orm";
+
+const db = drizzle(vercelSql);
 
 /**
  * @class DBService
@@ -10,15 +15,12 @@ class DBService {
     /**
      * Creates a user in the database.
      * @param user - The user object.
-     * @returns A promise that resolves with true if successul or false if not.
+     * @returns A promise that resolves with true if successful, false otherwise.
      * @static
     */
-    static async createUser(user: User): Promise<boolean> {
+    static async createUser(user: InsertUser): Promise<boolean> {
         try {
-            const { rowCount } = await sql`
-                INSERT INTO Users (email, firstname, lastname, password, stripe_id)
-                VALUES (${user.email}, ${user.firstname}, ${user.lastname}, ${user.password})
-            `;
+            const { rowCount } = await db.insert(users).values(user);
             return rowCount === 1;
         } catch (e) {
             console.error(`DB_SERVICE createUser: ${e}`);
@@ -34,7 +36,7 @@ class DBService {
     */
     static async deleteUser(id: string): Promise<boolean> {
         try {
-            const { rowCount } = await sql`DELETE FROM Users WHERE id = ${id};`
+            const { rowCount } = await db.delete(users).where(eq(users.id, id));
             return rowCount === 1;
         } catch (e) {
             console.error(`DB_SERVICE checkIfUserExists: ${e}`);
@@ -45,13 +47,19 @@ class DBService {
     /**
      * Retrieves a user from the database.
      * @param id - The id of the user to retrieve.
-     * @returns A promise that resolves with the user object or null if not found.
+     * @returns A promise that resolves with the user object, null otherwise.
      * @static
     */
     static async getUserById(id: string): Promise<User | null> {
         try {
-            const { rowCount, rows } = await sql`SELECT id, email, firstname, lastname, stripe_id FROM Users WHERE id = ${id};`;
-            if(rowCount === 1) return <User> rows[0];
+            const res = await db.select({
+                id: users.id,
+                email: users.email,
+                firstname: users.firstname,
+                lastname: users.lastname,
+                stripe_id: users.stripe_id
+            }).from(users).where(eq(users.id, id))
+            if(res.length === 1) return <User> res[0];
             return null;
         } catch (e) {
             console.error(`DB_SERVICE getUserById: ${e}`);
@@ -62,13 +70,19 @@ class DBService {
     /**
      * Retrieves a user from the database by email.
      * @param email - The email of the user to retrieve.
-     * @returns A promise that resolves with the user object or null if not found.
+     * @returns A promise that resolves with the user object, null otherwise.
      * @static
     */
     static async getUserByEmail(email: string): Promise<User | null> {
         try {
-            const { rowCount, rows } = await sql`SELECT id, email, firstname, lastname, stripe_id FROM Users WHERE email = ${email};`;
-            if(rowCount === 1) return <User> rows[0];
+            const res = await db.select({
+                id: users.id,
+                email: users.email,
+                firstname: users.firstname,
+                lastname: users.lastname,
+                stripe_id: users.stripe_id
+            }).from(users).where(eq(users.email, email))
+            if(res.length === 1) return <User> res[0];
             return null;
         } catch (e) {
             console.error(`DB_SERVICE getUserByEmail: ${e}`);
@@ -79,13 +93,15 @@ class DBService {
     /**
      * Retrieves a users password from the database.
      * @param id - The id of the user to retrieve.
-     * @returns A promise that resolves with the user object or null if not found.
+     * @returns A promise that resolves with the user object, null otherwise.
      * @static
     */
     static async getUserPasswordById(id: string): Promise<User | null> {
         try {
-            const { rowCount, rows } = await sql`SELECT password FROM Users WHERE id = ${id};`;
-            if(rowCount === 1) return <User> rows[0];
+            const res = await db.select({
+                password: users.password
+            }).from(users).where(eq(users.id, id))
+            if(res.length === 1) return <User> res[0];
             return null;
         } catch (e) {
             console.error(`DB_SERVICE getUserPasswordById: ${e}`);
@@ -94,32 +110,18 @@ class DBService {
     }
 
     /**
-     * Retrieves a users email from the database.
-     * @param id - The id of the user to retrieve.
-     * @returns A promise that resolves with the user email or null if not found.
-     * @static
-    */
-    static async getUserEmail(id: string): Promise<string | null> {
-        try {
-            const { rowCount, rows } = await sql`SELECT email FROM Users WHERE id = ${id};`;
-            if(rowCount === 1) return rows[0].email;
-            return null;
-        } catch (e) {
-            console.error(`DB_SERVICE getUserEmail: ${e}`);
-            return null;
-        }
-    }
-
-    /**
      * Retrieves a users id and password from the database.
      * @param email - The email of the user to retrieve.
-     * @returns A promise that resolves with the user object or null if not found.
+     * @returns A promise that resolves with the user object, null otherwise.
      * @static
     */
     static async getUserPasswordByEmail(email: string): Promise<User | null> {
         try {
-            const { rowCount, rows } = await sql`SELECT id, password FROM Users WHERE email = ${email};`;
-            if(rowCount === 1) return <User> rows[0];
+            const res = await db.select({
+                id: users.id,
+                password: users.password
+            }).from(users).where(eq(users.email, email))
+            if(res.length === 1) return <User> res[0];
             return null;
         } catch (e) {
             console.error(`DB_SERVICE getUserPasswordByEmail: ${e}`);
@@ -128,18 +130,37 @@ class DBService {
     }
 
     /**
+     * Retrieves a users email from the database.
+     * @param id - The id of the user to retrieve.
+     * @returns A promise that resolves with the user email, null otherwise.
+     * @static
+    */
+    static async getUserEmail(id: string): Promise<string | null> {
+        try {
+            const res = await db.select({
+                email: users.email,
+            }).from(users).where(eq(users.id, id))
+            if(res.length === 1) return res[0].email;
+            return null;
+        } catch (e) {
+            console.error(`DB_SERVICE getUserEmail: ${e}`);
+            return null;
+        }
+    }
+
+    /**
      * Updates the refresh token for a user in the database.
      * @param id - The ID of the user to update.
-     * @param refreshToken - The new refresh token for the user.
+     * @param user - The user object with updated values.
      * @returns A promise that resolves with true if the update was successful, false otherwise.
      * @static
     */
-    static async updateUserRefreshToken(id: string, refreshToken: string | null): Promise<boolean> {
+    static async updateUser(id: string, user: User): Promise<boolean> {
         try {
-            const { rowCount } = await sql`UPDATE Users SET jwt_refresh_token = ${refreshToken}, updated_at = ${Math.floor(Date.now() / 1000)} WHERE id = ${id};`
+            const { rowCount } = await db.update(users).set(user).where(eq(users.id, id));
             return rowCount === 1;
         } catch (e) {
-            console.error(`DB_SERVICE updateUserRefreshToken: ${e}`);
+            console.error(`DB_SERVICE updateUser: ${e}`);
             return false;
         }
     }
@@ -153,8 +174,8 @@ class DBService {
     */
     static async checkIfRefreshTokenExists(refreshToken: string): Promise<boolean> {
         try {
-            const { rows } = await sql`SELECT EXISTS ( SELECT 1 FROM Users WHERE jwt_refresh_token = ${refreshToken} );`
-            return rows[0].exists;
+            const res = await db.select({ id: users.id }).from(users).where(eq(users.jwt_refresh_token, refreshToken));
+            return res.length === 1;
         } catch (e) {
             console.error(`DB_SERVICE updateUserRefreshToken: ${e}`);
             return false;
@@ -169,8 +190,8 @@ class DBService {
     */
     static async checkIfUserExistsById(id: string): Promise<boolean> {
         try {
-            const { rows } = await sql`SELECT EXISTS ( SELECT 1 FROM Users WHERE id = ${id});`
-            return rows[0].exists;
+            const res = await db.select({ id: users.id }).from(users).where(eq(users.id, id));
+            return res.length === 1;
         } catch (e) {
             console.error(`DB_SERVICE checkIfUserExists: ${e}`);
             return false;
@@ -185,8 +206,8 @@ class DBService {
     */
     static async checkIfUserExistsByEmail(email: string): Promise<boolean> {
         try {
-            const { rows } = await sql`SELECT EXISTS ( SELECT 1 FROM Users WHERE email = ${email});`
-            return rows[0].exists;
+            const res = await db.select({ id: users.id }).from(users).where(eq(users.email, email));
+            return res.length === 1;
         } catch (e) {
             console.error(`DB_SERVICE checkIfUserExists: ${e}`);
             return false;
@@ -199,31 +220,16 @@ class DBService {
      * @returns A promise that resolves with the stripe id if the user exists, null otherwise.
      * @static
     */
-    static async getStripeCustomerId(id: string): Promise<string | null> {
+    static async getStripeId(id: string): Promise<string | null> {
         try {
-            const { rowCount, rows } = await sql`SELECT stripe_id FROM Users WHERE id = ${id};`
-            if(rowCount === 1) return rows[0].stripe_id;
+            const res = await db.select({
+                stripe_id: users.stripe_id
+            }).from(users).where(eq(users.id, id))
+            if(res.length === 1) return res[0].stripe_id;
             return null;
         } catch (e) {
             console.error(`DB_SERVICE getStripeId: ${e}`);
             return null;
-        }
-    }
-    
-    /**
-     * Updates the stripe id for specified in the database.
-     * @param id - Id of the user to update.
-     * @param stripeId - Stripe customer id.
-     * @returns A promise that resolves with true if the user exists, false otherwise.
-     * @static
-    */
-    static async updateStripeCustomerId(id: string, stripeId: string): Promise<boolean> {
-        try {
-            const { rowCount } = await sql`UPDATE Users SET stripe_id = ${stripeId}, updated_at = ${Math.floor(Date.now() / 1000)} WHERE id = ${id};`
-            return rowCount === 1;
-        } catch (e) {
-            console.error(`DB_SERVICE updateStripeId: ${e}`);
-            return false;
         }
     }
 

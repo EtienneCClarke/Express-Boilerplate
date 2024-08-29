@@ -1,9 +1,8 @@
 require('dotenv').config()
 
 const CONFIG = {
-    port: process.env.PORT,
-    baseURL: `http://localhost:${process.env.PORT}`,
-    deployEnvironment: process.env.DEPLOY_ENVIRONMENT
+    port: process.env.PORT || 3000,
+    baseURL: `http://localhost:${process.env.PORT || 3000}`,
 }
 
 export { CONFIG }

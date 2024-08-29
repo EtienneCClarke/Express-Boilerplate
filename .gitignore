@@ -4,3 +4,6 @@
 # Sensitive environment variables
 .env
 .env.local
+
+# Drizzle migrations
+/migrations

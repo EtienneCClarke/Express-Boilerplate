@@ -1,14 +1,11 @@
 import { Request, Response, NextFunction} from "express";
 import { ZodError } from 'zod';
-
 import { StatusCodes } from "http-status-codes";
 
-type Mode = 'body' | 'params';
-
-function validateData(schema: any, mode: Mode = 'body') {
+function validateData(schema: any) {
     return (req: Request, res: Response, next: NextFunction) => {
         try {
-            schema.parse(req[mode]);
+            schema.parse(req.body);
             next();
         } catch (e) {
             if(e instanceof ZodError) {

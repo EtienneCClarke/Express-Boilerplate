@@ -1,13 +1,13 @@
 interface User {
-    id: string;
+    id?: string;
     email?: string;
     firstname?: string;
     lastname?: string;
     password?: string;
-    created_at?: number;
-    updated_at?: number;
-    jwt_refresh_token?: string;
-    stripe_id?: string;
+    created_at?: Date;
+    updated_at?: Date;
+    jwt_refresh_token?: string | null;
+    stripe_id?: string | null;
 }
 
 export type {
