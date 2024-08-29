@@ -41,4 +41,8 @@ router.delete('/delete', [validateData(userDeletionSchema), protectedRoute], asy
 
 });
 
+router.post('/upload', async (req: Request, res: Response) => {
+    res.status(StatusCodes.OK).send();
+});
+
 export { router as account }

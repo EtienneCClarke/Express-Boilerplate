@@ -5,11 +5,12 @@ import { auth } from "./routes/auth";
 import { posts } from "./routes/posts";
 import { payments } from "./routes/payments";
 import { account } from "./routes/account";
+import { middlewareExcept } from "./middleware/middlewareExcept";
 
 const app: Express = express();
 
 /* Universal middleware */
-app.use(express.json());
+app.use(middlewareExcept(express.json(), ['/account/upload/*']));
 app.use(rateLimiter)
 
 /* Routes */
