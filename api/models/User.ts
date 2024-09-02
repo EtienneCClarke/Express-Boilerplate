@@ -4,6 +4,7 @@ interface User {
     firstname?: string;
     lastname?: string;
     password?: string;
+    avatar?: string | null;
     created_at?: Date;
     updated_at?: Date;
     jwt_refresh_token?: string | null;

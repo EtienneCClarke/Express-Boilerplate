@@ -8,6 +8,7 @@ export const users = pgTable('Users', {
     firstname: text('firstname').notNull(),
     lastname: text('lastname').notNull(),
     password: varchar('password', { length: 255 }).notNull(),
+    avatar: varchar('avatar', { length: 43 }),
     jwt_refresh_token: varchar('jwt_refresh_token', { length: 255 }),
     stripe_id: varchar('stripe_id', { length: 100 }),
     created_at: timestamp('created_at').notNull().defaultNow(),

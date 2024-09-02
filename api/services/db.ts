@@ -232,6 +232,25 @@ class DBService {
             return null;
         }
     }
+    
+    /**
+     * Retrieves the avatar file name for a specified user.
+     * @param id - Id of the user.
+     * @returns A promise that resolves with the users avatar file name if the user has one set, null otherwise.
+     * @static
+    */
+    static async getAvatar(id: string): Promise<string | null> {
+        try {
+            const res = await db.select({
+                avatar: users.avatar
+            }).from(users).where(eq(users.id, id))
+            if(res.length === 1) return res[0].avatar;
+            return null;
+        } catch (e) {
+            console.error(`DB_SERVICE getAvatar: ${e}`);
+            return null;
+        }
+    }
 
 }
 

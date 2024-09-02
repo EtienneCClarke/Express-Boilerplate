@@ -2,6 +2,8 @@
 
 Boilerplate for an Express.js API that uses JWT (Json Web Tokens) for authorisation and Stripe for payments.
 
+This project uses `nodemon` for hot reloading during development.
+
 ## JWT Authentication
 
 This project uses JWT (Json Web Tokens) for user authentication;
@@ -15,6 +17,16 @@ node -e "const crypto = require('crypto'); console.log({
 ```
 
 Adjust token expiration in the config found at `/api/configs/jwt.config.ts`.
+
+## Drizzle ORM
+
+This project uses Drizzle ORM to manage and interact with a PostgreSQL database.
+
+First define your tables in `api/schemas/db.schema.ts`.
+
+Then use the command `npm run generate` to generate a migration SQL file.
+
+Finally, run your migration using the command `npm run migrate`.
 
 ## Stripe
 
