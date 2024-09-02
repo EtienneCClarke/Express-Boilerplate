@@ -5,7 +5,7 @@ import { validateData } from "../middleware/validation";
 import { userDeletionSchema, userUpdateSchema } from "../schemas/user.schema";
 import { DBService as db } from "../services/db";
 import { BCryptService as crypt } from "../services/bcrypt";
-import { S3Service as s3 } from "../services/s3";
+import { S3Service as s3 } from "../services/aws/s3";
 import multer from "multer";
 import sharp from "sharp";
 
