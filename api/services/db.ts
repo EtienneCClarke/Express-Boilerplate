@@ -57,7 +57,7 @@ class DBService {
                 email: users.email,
                 firstname: users.firstname,
                 lastname: users.lastname,
-                stripe_id: users.stripe_id
+                stripeId: users.stripe_id
             }).from(users).where(eq(users.id, id))
             if(res.length === 1) return <User> res[0];
             return null;
@@ -80,7 +80,58 @@ class DBService {
                 email: users.email,
                 firstname: users.firstname,
                 lastname: users.lastname,
-                stripe_id: users.stripe_id
+                avatar: users.avatar,
+                stripeId: users.stripe_id
+            }).from(users).where(eq(users.email, email))
+            if(res.length === 1) return <User> res[0];
+            return null;
+        } catch (e) {
+            console.error(`DB_SERVICE getUserByEmail: ${e}`);
+            return null;
+        }
+    }
+    
+    /**
+     * Retrieves a user from the database including their hashed password.
+     * @param id - The id of the user to retrieve.
+     * @returns A promise that resolves with the user object, null otherwise.
+     * @static
+    */
+    static async getUserByIdWithPassword(id: string): Promise<User | null> {
+        try {
+            const res = await db.select({
+                id: users.id,
+                email: users.email,
+                firstname: users.firstname,
+                lastname: users.lastname,
+                avatar: users.avatar,
+                stripeId: users.stripe_id,
+                password: users.password
+            }).from(users).where(eq(users.id, id))
+            if(res.length === 1) return <User> res[0];
+            return null;
+        } catch (e) {
+            console.error(`DB_SERVICE getUserById: ${e}`);
+            return null;
+        }
+    }
+
+    /**
+     * Retrieves a user from the database by email including their hashed password.
+     * @param email - The email of the user to retrieve.
+     * @returns A promise that resolves with the user object, null otherwise.
+     * @static
+    */
+    static async getUserByEmailWithPassword(email: string): Promise<User | null> {
+        try {
+            const res = await db.select({
+                id: users.id,
+                email: users.email,
+                firstname: users.firstname,
+                lastname: users.lastname,
+                avatar: users.avatar,
+                stripeId: users.stripe_id,
+                password: users.password
             }).from(users).where(eq(users.email, email))
             if(res.length === 1) return <User> res[0];
             return null;

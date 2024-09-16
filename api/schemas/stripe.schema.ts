@@ -4,7 +4,7 @@ import { z } from 'zod';
 export const checkoutSessionSchema = z.strictObject({
     items: z.strictObject({
         id: z.string(),
-        quantity: z.number()
+        quantity: z.number().min(1)
     }).array().min(1)
 });
 

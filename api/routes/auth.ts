@@ -12,8 +12,8 @@ const router = Router();
 
 router.post('/login', validateData(userLoginSchema), async (req: Request, res: Response) => {
 
-    // Get user
-    const user = await db.getUserPasswordByEmail(req.body.email);
+    // Get user password
+    const user = await db.getUserByEmailWithPassword(req.body.email);
     if(user === null || !user.password) {
         return res.status(StatusCodes.NOT_FOUND).send({ error: 'Could not find user.' });
     }
@@ -27,21 +27,21 @@ router.post('/login', validateData(userLoginSchema), async (req: Request, res: R
     if(!delete user.password) return res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({ error: 'Something went wrong.' }); 
 
     // Generate tokens
-    const accessToken = jwt.signAccessToken(user);
-    const refreshToken = jwt.signRefreshToken(user);
+    const accessToken = jwt.signAccessToken({ id: user.id });
+    const refreshToken = jwt.signRefreshToken({ id: user.id });
     
     // Update user
     if(!await db.updateUser(<string> user.id, { jwt_refresh_token: refreshToken })) {
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({ error: 'Could not update refresh token.' });
     }
 
-    res.status(StatusCodes.OK).send({ accessToken, refreshToken });
+    res.status(StatusCodes.OK).send({ accessToken, refreshToken, user });
 });
 
 router.put('/register', validateData(userRegistrationSchema), async (req: Request, res: Response) => {
 
     // Check if email is already registered
-    if(await db.getUserByEmail(req.body.email) != null) {
+    if(await db.checkIfUserExistsByEmail(req.body.email) != null) {
         return res.status(StatusCodes.CONFLICT).send({ error: 'Email is already associated with existing account.' });
     }
 
