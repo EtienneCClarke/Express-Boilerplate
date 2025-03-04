@@ -1,6 +1,7 @@
-import { Request, Response, Router, raw } from "express";
+import { Request, Response, Router } from "express";
 import { StripeService as stripe } from "../services/stripe";
-import { protectedRoute } from "../middleware/protectedRoute";
+import { ResponseService as rs } from "../services/response";
+import { requireAuthentication } from "../middleware/requireAuthentication";
 import { StatusCodes } from "http-status-codes";
 import { validateData } from "../middleware/validation";
 import { addCardSchema, checkoutSessionSchema, createCustomerSchema, createSubscriptionSchema } from "../schemas/stripe.schema";
@@ -9,20 +10,26 @@ import Stripe from "stripe";
 
 const router = Router();
 
-router.post('/checkout-session', [validateData(checkoutSessionSchema), protectedRoute], async (req: Request, res: Response) => {
+// Authenticated route
+router.use(requireAuthentication);
+
+router.post('/checkout-session', validateData(checkoutSessionSchema), async (req: Request, res: Response) => {
     try {
 
         // Get user
         const user = await db.getUserById(req.user.id);
         if(user === null) {
-            return res.status(StatusCodes.BAD_REQUEST).send({ error: 'Could not find user' });
-        } 
+            rs.send('Could not find user.', StatusCodes.BAD_REQUEST, req, res);
+            return;
+        };
+
 
         // Check if user has stripe ID, if not generate one.
         if(user.stripe_id === null) {
             const customer = await stripe.createCustomer(user);
             if(customer === null) {
-                return res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({ error: 'Could not create new customer.' });
+                rs.send('Could not create new customer.', StatusCodes.INTERNAL_SERVER_ERROR, req, res);
+                return;
             } else {
                 user.stripe_id = customer.id;
             }
@@ -42,53 +49,60 @@ router.post('/checkout-session', [validateData(checkoutSessionSchema), protected
 
         // Validate session
         if(session === null) {
-            return res.status(StatusCodes.BAD_REQUEST).send({ error: 'Could not create checkout session.' });
+            rs.send('Could not create checkout session.', StatusCodes.BAD_REQUEST, req, res);
+            return;
         }
 
-        return res.status(StatusCodes.OK).send({ sessionId: session.id, url: session.url })
+        rs.send({ sessionId: session.id, url: session.url }, StatusCodes.OK, req, res);
     } catch (e) {
-        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({ error: 'Could create checkout session.' });
+        rs.send('Could not create checkout session.', StatusCodes.INTERNAL_SERVER_ERROR, req, res);
     }
 });
 
-router.post('/create-customer', [validateData(createCustomerSchema), protectedRoute], async (req: Request, res: Response) => {
+router.post('/create-customer', validateData(createCustomerSchema), async (req: Request, res: Response) => {
     try {
 
         // Get user
         const user = await db.getUserById(req.user.id);
         if(user === null) {
-            return res.status(StatusCodes.BAD_REQUEST).send({ error: 'Could not find user.' });
+            rs.send('Could not find user.', StatusCodes.BAD_REQUEST, req, res);
+            return;
         }
         
         // Check if user is already a customer
         if(user?.stripe_id !== null) {
-            return res.status(StatusCodes.CONFLICT).send({ error: 'Customer already exists.' });
+            rs.send('Customer already exists.', StatusCodes.CONFLICT, req, res);
+            return;
         }
         
         // Create customer
         const customer = await stripe.createCustomer({ ...user, ...req.body });
         if(customer === null) {
-            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({ error: 'Could not create customer' });
+            rs.send('Could not create customer.', StatusCodes.INTERNAL_SERVER_ERROR, req, res);
+            return;
         }
         
-        res.status(StatusCodes.CREATED).send({ message: 'Successfullly created new customer.', customer });
+
+        rs.send({ message: 'Successfullly created new customer.', customer }, StatusCodes.CREATED, req, res);
     } catch (e) {
-        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({ error: 'Could not add customer.' });
+        rs.send('Could not create customer.', StatusCodes.INTERNAL_SERVER_ERROR, req, res);
     }
 });
 
-router.post('/create-subscription', [validateData(createSubscriptionSchema), protectedRoute], async (req: Request, res: Response) => {
+router.post('/create-subscription', validateData(createSubscriptionSchema), async (req: Request, res: Response) => {
     try {
 
         // Get user
         const user = await db.getUserById(req.user.id);
         if(user === null) {
-            return res.status(StatusCodes.BAD_REQUEST).send({ error: 'Could not find user.' });
+            rs.send('Could not find user.', StatusCodes.BAD_REQUEST, req, res);
+            return;
         }
 
         // Check if user exists
         if(user?.stripe_id === null || user?.stripe_id === undefined) {
-            return res.status(StatusCodes.CONFLICT).send({ error: 'Customer does not exist.' });
+            rs.send('User does not have a stripe ID.', StatusCodes.BAD_REQUEST, req, res);
+            return;
         }
 
         // Create subscription
@@ -102,40 +116,42 @@ router.post('/create-subscription', [validateData(createSubscriptionSchema), pro
 
         // Validate subscription
         if(subscription === null) {
-            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({ error: 'Could not create subscription. '});
+            rs.send('Could not create subscription.', StatusCodes.INTERNAL_SERVER_ERROR, req, res);
+            return;
         }
 
-        res.status(StatusCodes.CREATED).send({
+        rs.send({
             subscriptionId: subscription?.id,
-            clientSecret: subscription?.latest_invoice === null ? '' : (<Stripe.PaymentIntent>(<Stripe.Invoice> subscription?.latest_invoice).payment_intent).client_secret
-        });
+            clientSecret: subscription?.latest_invoice === null ? '' : ((subscription?.latest_invoice as Stripe.Invoice).payment_intent as Stripe.PaymentIntent).client_secret
+        }, StatusCodes.CREATED, req, res);
     } catch (e: any) {
-        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({ message: 'Could not add customer.' , error: e });
+        rs.send('Could not create subscription.', StatusCodes.INTERNAL_SERVER_ERROR, req, res);
     }
 });
 
-router.post('/add-card', [validateData(addCardSchema), protectedRoute],  async (req: Request, res: Response) => {
+router.post('/add-card', validateData(addCardSchema),  async (req: Request, res: Response) => {
 
     // Get user stripe_id
     const stripeId = await db.getStripeId(req.user.id);
     if(stripeId === null) {
-        return res.status(StatusCodes.BAD_REQUEST).send({ error: 'User does not exist.' });
-    }
+        rs.send('User does not have a stripe ID.', StatusCodes.BAD_REQUEST, req, res);
+        return;
+    };
 
     // Create token
     const cardToken = await stripe.createCardToken(req.body.card);
 
     // Validate card token
     if(cardToken === null) {
-        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({ error: 'Could not create token.' });
-    }
+        rs.send('Could not create card token.', StatusCodes.BAD_REQUEST, req, res);
+        return;
+    };
 
+    rs.send({ cardToken }, StatusCodes.OK, req, res);
 });
 
-router.get('/publishable-key', protectedRoute, async (req: Request, res: Response) => {
-
-    return res.status(StatusCodes.OK).send({ publishableKey: await stripe.getPublishableKey() })
-
+router.get('/publishable-key', async (req: Request, res: Response) => {
+    rs.send({ key: process.env.STRIPE_PUBLISHABLE_KEY }, StatusCodes.OK, req, res);
 });
 
 router.post('/webhook', async (req: Request, res: Response) => {
@@ -160,7 +176,7 @@ router.post('/webhook', async (req: Request, res: Response) => {
             console.error(`Stripe Webhook: Unhandled event type ${event.type}`);
     }
 
-    res.json({ received: true });
+    rs.send('Success', StatusCodes.OK, req, res);
 
 });
 

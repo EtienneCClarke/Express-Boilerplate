@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-type MiddlewareFn = (req: Request, res: Response, next: NextFunction) => void;
+import { MiddlewareFn } from "../types/middleware";
 
 function middlewareExcept(fn: MiddlewareFn, except: string[]): MiddlewareFn {
     return (req, res, next) => {

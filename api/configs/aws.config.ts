@@ -8,6 +8,12 @@ const CONFIG = {
     
     s3: {
         name: process.env.AWS_S3_BUCKET_NAME,
+    },
+
+    ses: {
+        emails: {
+            info: process.env.CONTACT_EMAIL
+        }
     }
 
 }

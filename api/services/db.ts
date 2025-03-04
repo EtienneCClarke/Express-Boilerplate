@@ -1,8 +1,8 @@
 import { sql as vercelSql } from "@vercel/postgres";
 import { drizzle } from "drizzle-orm/vercel-postgres";
 import { InsertUser, users } from "../schemas/db.schema";
-import { User } from "../models/User";
-import { eq, sql } from "drizzle-orm";
+import { User } from "../types/user";
+import { eq } from "drizzle-orm";
 
 const db = drizzle(vercelSql);
 
@@ -59,7 +59,7 @@ class DBService {
                 lastname: users.lastname,
                 stripeId: users.stripe_id
             }).from(users).where(eq(users.id, id))
-            if(res.length === 1) return <User> res[0];
+            if(res.length === 1) return res[0] as User;
             return null;
         } catch (e) {
             console.error(`DB_SERVICE getUserById: ${e}`);
@@ -83,7 +83,7 @@ class DBService {
                 avatar: users.avatar,
                 stripeId: users.stripe_id
             }).from(users).where(eq(users.email, email))
-            if(res.length === 1) return <User> res[0];
+            if(res.length === 1) return res[0] as User;
             return null;
         } catch (e) {
             console.error(`DB_SERVICE getUserByEmail: ${e}`);
@@ -108,10 +108,10 @@ class DBService {
                 stripeId: users.stripe_id,
                 password: users.password
             }).from(users).where(eq(users.id, id))
-            if(res.length === 1) return <User> res[0];
+            if(res.length === 1) return res[0] as User;
             return null;
         } catch (e) {
-            console.error(`DB_SERVICE getUserById: ${e}`);
+            console.error(`DB_SERVICE getUserByIdWithPassword: ${e}`);
             return null;
         }
     }
@@ -133,10 +133,10 @@ class DBService {
                 stripeId: users.stripe_id,
                 password: users.password
             }).from(users).where(eq(users.email, email))
-            if(res.length === 1) return <User> res[0];
+            if(res.length === 1) return res[0] as User;
             return null;
         } catch (e) {
-            console.error(`DB_SERVICE getUserByEmail: ${e}`);
+            console.error(`DB_SERVICE getUserByEmailWithPassword: ${e}`);
             return null;
         }
     }
@@ -152,7 +152,7 @@ class DBService {
             const res = await db.select({
                 password: users.password
             }).from(users).where(eq(users.id, id))
-            if(res.length === 1) return <User> res[0];
+            if(res.length === 1) return res[0] as User;
             return null;
         } catch (e) {
             console.error(`DB_SERVICE getUserPasswordById: ${e}`);
@@ -172,7 +172,7 @@ class DBService {
                 id: users.id,
                 password: users.password
             }).from(users).where(eq(users.email, email))
-            if(res.length === 1) return <User> res[0];
+            if(res.length === 1) return res[0] as User;
             return null;
         } catch (e) {
             console.error(`DB_SERVICE getUserPasswordByEmail: ${e}`);
@@ -228,7 +228,7 @@ class DBService {
             const res = await db.select({ id: users.id }).from(users).where(eq(users.jwt_refresh_token, refreshToken));
             return res.length === 1;
         } catch (e) {
-            console.error(`DB_SERVICE updateUserRefreshToken: ${e}`);
+            console.error(`DB_SERVICE checkIfRefreshTokenExists: ${e}`);
             return false;
         }
     }
@@ -244,7 +244,7 @@ class DBService {
             const res = await db.select({ id: users.id }).from(users).where(eq(users.id, id));
             return res.length === 1;
         } catch (e) {
-            console.error(`DB_SERVICE checkIfUserExists: ${e}`);
+            console.error(`DB_SERVICE checkIfUserExistsById: ${e}`);
             return false;
         }
     }
@@ -260,7 +260,7 @@ class DBService {
             const res = await db.select({ id: users.id }).from(users).where(eq(users.email, email));
             return res.length === 1;
         } catch (e) {
-            console.error(`DB_SERVICE checkIfUserExists: ${e}`);
+            console.error(`DB_SERVICE checkIfUserExistsByEmail: ${e}`);
             return false;
         }
     }

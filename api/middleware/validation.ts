@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction} from "express";
 import { ZodError } from 'zod';
 import { StatusCodes } from "http-status-codes";
+import { ResponseService as rs } from "../services/response";
 
 function validateData(schema: any) {
     return (req: Request, res: Response, next: NextFunction) => {
@@ -12,9 +13,9 @@ function validateData(schema: any) {
                 const errors = e.errors.map((issue: any) => ({
                     message: `${issue.path.length > 1 ? `${issue.path.join('.')} is ` : ''}${issue.message}`,
                 }))
-                res.status(StatusCodes.BAD_REQUEST).json({ error: 'Invalid data', details: errors })
+                rs.send(errors, StatusCodes.BAD_REQUEST, req, res);
             } else {
-                res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'Internal Server Error' });
+                rs.send('Internal Server Error', StatusCodes.INTERNAL_SERVER_ERROR, req, res);
             }
         } 
     }

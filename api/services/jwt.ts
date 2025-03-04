@@ -1,12 +1,39 @@
-import jwt, { SignOptions, Secret } from "jsonwebtoken";
+import jwt, { SignOptions } from "jsonwebtoken";
 import { CONFIG } from "../configs/jwt.config";
-import { User } from "../models/User";
+import { User } from "../types/user";
 
 /**
  * @class JWTService
  * @description A service class for JWT (JSON Web Token) related operations
 */
 class JWTService {
+
+    /**
+     * Retrieves the JWT secret from the configuration.
+     * @returns The JWT secret.
+     * @private
+    */
+    private static getSecret(): string {
+        return CONFIG.JWTSecret || 'secret';
+    }
+
+    /**
+     * Retrieves the JWT refresh secret from the configuration.
+     * @returns The JWT refresh secret.
+     * @private
+    */
+    private static getRefreshSecret(): string {
+        return CONFIG.JWTRefreshSecret || 'refresh-secret'
+    }
+
+    /**
+     * Retrieves the JWT expiration time from the configuration.
+     * @returns The JWT expiration time.
+     * @private
+    */
+    private static getExpiration(): number {
+        return CONFIG.JWTExpiration || 15 * 60; // Default 15 minutes
+    }
 
     /**
      * Sign an access token with the user payload and JWT secret
@@ -16,7 +43,7 @@ class JWTService {
      * @static
     */ 
     static signAccessToken(user: User, options?: SignOptions): string {
-        return jwt.sign(user, <Secret> CONFIG.JWTSecret, options ? options : { expiresIn: CONFIG.JWTExpiration });
+        return jwt.sign(user, this.getSecret(), options ? options : { expiresIn: this.getExpiration() });
     }
     
     /**
@@ -27,7 +54,7 @@ class JWTService {
      * @static
     */
     static signRefreshToken(user: User, options?: SignOptions): string {
-        return jwt.sign(user, <Secret> CONFIG.JWTRefreshSecret, options);
+        return jwt.sign(user, this.getRefreshSecret(), options);
     }
 
     /**
@@ -38,8 +65,9 @@ class JWTService {
     */
     static verifyAccessToken(token: string) {
         try {
-            return jwt.verify(token, <Secret> CONFIG.JWTSecret);
+            return jwt.verify(token, this.getSecret());
         } catch (e) {
+            console.error(`JWT_SERVICE verifyAccessToken: ${e}`);
             return null;
         }
     }
@@ -52,8 +80,8 @@ class JWTService {
      * @static
     */
     static verifyRefreshToken(token: string): any {
-        return jwt.verify(token, <Secret> CONFIG.JWTRefreshSecret, (err, user) => {
-            if(err) throw Error;
+        return jwt.verify(token, this.getRefreshSecret(), (err, user) => {
+            if(err) throw Error(err.message);
             return user;
         })
     }

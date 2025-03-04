@@ -1,11 +1,11 @@
 import { Stripe } from "stripe";
 import { CONFIG } from "../configs/stripe.config";
 import { DBService as db } from "./db";
-import { User } from "../models/User";
-import { Card } from "../models/Stripe";
+import { User } from "../types/user";
+import { Card } from "../types/stripe";
 
 const stripe = new Stripe(<string> CONFIG.secretKey,{
-    apiVersion: "2024-06-20",
+    apiVersion: "2025-02-24.acacia",
     appInfo: { name: CONFIG.name }
 });
 
@@ -27,7 +27,7 @@ class StripeService {
                 name: `${user.firstname} ${user.lastname}`,
                 email: user.email
             });
-            if(!await db.updateUser(<string> user.id, { stripe_id: customer.id })) throw new Error('Could not update user in database.');
+            if(!await db.updateUser(user.id as string, { stripe_id: customer.id })) throw new Error('Could not update user in database.');
             return customer;
         } catch (e) {
             console.error(`STRIPE_SERVICE createCustomer: ${e}`);
@@ -99,9 +99,9 @@ class StripeService {
     */
     static constructEvent(payload: string | Buffer, signature: string | Buffer) {
         try {
-            return stripe.webhooks.constructEvent(payload, signature, <string> CONFIG.webhookSecret)
+            return stripe.webhooks.constructEvent(payload, signature, CONFIG.webhookSecret as string)
         } catch (e) {
-            console.error(`STRIPE_SERVICE createCardToken: ${e}`);
+            console.error(`STRIPE_SERVICE constructEvent: ${e}`);
             return null;
         }
     }
@@ -116,7 +116,7 @@ class StripeService {
         try {
             return stripe.products.retrieve(productId);
         } catch (e) {
-            console.error(`STRIPE_SERVICE createCheckoutSession: ${e}`);
+            console.error(`STRIPE_SERVICE getProductData: ${e}`);
             return null;
         }
     }
@@ -128,9 +128,9 @@ class StripeService {
     */
     static async getPublishableKey(): Promise<string | null> {
         try {
-            return <string> CONFIG.publishableKey;
+            return CONFIG.publishableKey as string;
         } catch (e) {
-            console.error(`STRIPE_SERVICE createCheckoutSession: ${e}`);
+            console.error(`STRIPE_SERVICE getPublishableKey: ${e}`);
             return null;
         }
     }

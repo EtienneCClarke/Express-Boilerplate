@@ -1,6 +1,6 @@
 {
-  "name": "express-vercel",
-  "version": "0.0.4",
+  "name": "express-boilerplate",
+  "version": "0.0.5",
   "description": "",
   "main": "index.ts",
   "scripts": {
@@ -14,32 +14,33 @@
   "author": "Etienne Cellier-Clarke",
   "license": "None",
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.637.0",
-    "@aws-sdk/client-ses": "^3.637.0",
-    "@aws-sdk/s3-request-presigner": "^3.637.0",
-    "@vercel/postgres": "^0.9.0",
+    "@aws-sdk/client-s3": "3.758.0",
+    "@aws-sdk/client-ses": "3.758.0",
+    "@aws-sdk/s3-request-presigner": "3.758.0",
+    "@vercel/postgres": "0.10.0",
     "bcrypt": "^5.1.1",
-    "dotenv": "^16.4.5",
-    "drizzle-orm": "^0.33.0",
-    "express": "^4.19.2",
-    "express-rate-limit": "^7.4.0",
+    "dotenv": "16.4.7",
+    "drizzle-orm": "0.40.0",
+    "express": "5.0.1",
+    "express-rate-limit": "7.5.0",
     "http-status-codes": "^2.3.0",
     "jsonwebtoken": "^9.0.2",
     "multer": "^1.4.5-lts.1",
     "sharp": "^0.33.5",
-    "stripe": "^16.8.0",
-    "zod": "^3.23.8"
+    "stripe": "17.7.0",
+    "uuid": "^11.1.0",
+    "zod": "3.24.2"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
-    "@types/express": "^4.17.21",
-    "@types/jsonwebtoken": "^9.0.6",
+    "@types/express": "5.0.0",
+    "@types/jsonwebtoken": "^9.0.9",
     "@types/multer": "^1.4.12",
-    "@types/node": "^22.3.0",
-    "@types/stripe": "^8.0.417",
-    "drizzle-kit": "^0.24.0",
-    "nodemon": "^3.1.4",
+    "@types/node": "22.13.9",
+    "@types/stripe": "8.0.416",
+    "drizzle-kit": "0.30.5",
+    "nodemon": "3.1.9",
     "ts-node": "^10.9.2",
-    "typescript": "^5.5.4"
+    "typescript": "5.8.2"
   }
 }

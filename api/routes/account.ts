@@ -1,11 +1,12 @@
 import { Request, Response, Router } from "express";
 import { StatusCodes } from "http-status-codes";
-import { protectedRoute } from "../middleware/protectedRoute";
+import { requireAuthentication } from "../middleware/requireAuthentication";
 import { validateData } from "../middleware/validation";
 import { userDeletionSchema, userUpdateSchema } from "../schemas/user.schema";
 import { DBService as db } from "../services/db";
 import { BCryptService as crypt } from "../services/bcrypt";
 import { S3Service as s3 } from "../services/aws/s3";
+import { ResponseService as rs } from "../services/response";
 import multer from "multer";
 import sharp from "sharp";
 
@@ -13,20 +14,23 @@ const router = Router();
 const memoryStorage = multer.memoryStorage();
 const upload = multer({ storage: memoryStorage });
 
-router.patch('/update', [validateData(userUpdateSchema), protectedRoute], async (req: Request, res: Response) => {
+router.patch('/update', validateData(userUpdateSchema), async (req: Request, res: Response) => {
     
     // Update user
     if(!await db.updateUser(req.user.id, req.body)) {
-        return res.status(StatusCodes.BAD_REQUEST).send({ error: 'Could not update user.' });
+        rs.send('Could not update user.', StatusCodes.INTERNAL_SERVER_ERROR, req, res);
+        return;
     }
 
-    res.status(StatusCodes.OK).send({ message: 'Successfully updated user.' });
-
+    rs.send('User successfully updated.', StatusCodes.OK, req, res);
 });
 
-router.post('/avatar', [protectedRoute, upload.single('avatar')], async (req: Request, res: Response) => {
+router.post('/avatar', upload.single('avatar'), async (req: Request, res: Response) => {
 
-    if(!req.file) return res.status(StatusCodes.BAD_REQUEST).send({ error: 'No file provided.' });
+    if(!req.file) {
+        rs.send('No file provided.', StatusCodes.BAD_REQUEST, req, res);
+        return;
+    };
 
     // Resize image to be 150x150 pixels
     req.file.buffer = await sharp(req.file.buffer).resize({ width: 150, height: 150, fit: 'cover' }).toBuffer();
@@ -39,34 +43,35 @@ router.post('/avatar', [protectedRoute, upload.single('avatar')], async (req: Re
         !await s3.uploadObject(req.file, `avatar_${req.user.id}`) ||
         !await db.updateUser(req.user.id, { avatar: fileName })
     ) {
-        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({ error: 'Could not upload file.' });
+        rs.send('Could not upload file.', StatusCodes.INTERNAL_SERVER_ERROR, req, res);
+        return;
     }
 
-    return res.status(StatusCodes.OK).send({ message: 'Successfully upload avatar.' });
-    
+    rs.send('Successfully upload avatar.', StatusCodes.OK, req, res);
 })
 
-router.get('/avatar/:id', protectedRoute, async (req: Request, res: Response) => {
+router.get('/avatar/:id', async (req: Request, res: Response) => {
 
     // Get file name from database
     const fileName = await db.getAvatar(req.params.id);
     if(fileName === null) {
-        return res.status(StatusCodes.NOT_FOUND).send({ error: 'User does not have an avatar.' });
+        rs.send('User does not have an avatar.', StatusCodes.NOT_FOUND, req, res);
+        return;
     }
 
     // Get signed url with access to the file from S3
     const url = await s3.getObject(fileName);
 
-    return res.status(StatusCodes.OK).send({ url });
-
+    rs.send(url, StatusCodes.OK, req, res);
 })
 
-router.delete('/avatar', protectedRoute, async (req: Request, res: Response) => {
+router.delete('/avatar', async (req: Request, res: Response) => {
 
     // Get file name from database
     const fileName = await db.getAvatar(req.user.id);
     if(fileName === null) {
-        return res.status(StatusCodes.NOT_FOUND).send({ error: 'User does not have an avatar.' });
+        rs.send('User does not have an avatar.', StatusCodes.NOT_FOUND, req, res);
+        return;
     }
 
     // Remove from bucket and database
@@ -74,33 +79,35 @@ router.delete('/avatar', protectedRoute, async (req: Request, res: Response) => 
         await db.updateUser(req.user.id, { avatar: null });
         await s3.deleteObject(fileName);
     } catch (e) {
-        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({ error: 'Could not delete avatar.' });
+        rs.send('Could not delete avatar.', StatusCodes.INTERNAL_SERVER_ERROR, req, res);
+        return;
     }
 
-    return res.status(StatusCodes.OK).send({ message: 'Successfully deleted avatar.' });
-
+    rs.send('Successfully deleted avatar.', StatusCodes.OK, req, res);
 });
 
-router.delete('/delete', [validateData(userDeletionSchema), protectedRoute], async (req: Request, res: Response) => {
+router.delete('/delete', validateData(userDeletionSchema), async (req: Request, res: Response) => {
 
     // Get user
     const user = await db.getUserPasswordById(req.user.id);
     if(user === null || !user.password) {
-        return res.sendStatus(StatusCodes.INTERNAL_SERVER_ERROR);
+        rs.send('Could not find user.', StatusCodes.NOT_FOUND, req, res);
+        return;
     }
 
     // Validate password
     if(!await crypt.compare(req.body.password, user.password)) {
-        return res.status(StatusCodes.BAD_REQUEST).send({ error: 'Invalid password.' });
+        rs.send('Invalid credentials.', StatusCodes.UNAUTHORIZED, req, res);
+        return;
     }
 
     // Delete user from database
     if(!await db.deleteUser(req.user.id)) {
-        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({ error: 'Could not delete user.' });
+        rs.send('Could not delete user.', StatusCodes.INTERNAL_SERVER_ERROR, req, res);
+        return;
     }
 
-    res.status(StatusCodes.OK).send({ message: 'User successfully deleted.' });
-
+    rs.send('User successfully deleted.', StatusCodes.OK, req, res);
 });
 
 export { router as account }
