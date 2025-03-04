@@ -16,7 +16,7 @@ const posts = [
 ]
 
 router.get('/all', (req: Request, res: Response) => {
-    rs.send('Error message', StatusCodes.BAD_REQUEST, req, res);
+    rs.send(posts, StatusCodes.OK, req, res);
 });
 
 export { router as posts }
